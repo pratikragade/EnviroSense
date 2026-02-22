@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EnviroSense – Feel the Environment</title>
+<link href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&family=Satoshi:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #020408;
+  --surface: #0a0f1a;
+  --navy: #060d1f;
+  --blue1: #0052ff;
+  --blue2: #00b4ff;
+  --green: #00ff87;
+  --teal: #00e5cc;
+  --white: #ffffff;
+  --gray: #8892a4;
+  --border: rgba(255,255,255,0.07);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--white);
+  overflow-x: hidden;
+}
+
+/* ─── NOISE CANVAS BG ─── */
+canvas#noise {
+  position: fixed; inset: 0; z-index: 0;
+  pointer-events: none; opacity: 0.03;
+}
+
+/* ─── GRADIENT BLOBS ─── */
+.blob {
+  position: fixed; border-radius: 50%;
+  filter: blur(120px); opacity: 0.18;
+  pointer-events: none; z-index: 0;
+  animation: drift 20s ease-in-out infinite;
+}
+.blob1 { width:800px;height:800px;background:radial-gradient(#0052ff,#001a66); top:-300px;left:-200px; }
+.blob2 { width:600px;height:600px;background:radial-gradient(#00ff87,#00664a); bottom:-100px;right:-100px; animation-delay:-8s; }
+.blob3 { width:400px;height:400px;background:radial-gradient(#00b4ff,#004080); top:40%;left:40%; animation-delay:-4s; opacity:0.1; }
+
+@keyframes drift {
+  0%,100% { transform: translate(0,0) scale(1); }
+  33% { transform: translate(40px,-40px) scale(1.05); }
+  66% { transform: translate(-30px,30px) scale(0.95); }
+}
+
+/* ─── NAV ─── */
+nav {
+  position: fixed; top:0; left:0; right:0; z-index:200;
+  padding: 20px 60px;
+  display: flex; align-items:center; justify-content:space-between;
+  background: rgba(2,4,8,0.6);
+  backdrop-filter: blur(30px) saturate(180%);
+  border-bottom: 1px solid var(--border);
+}
+.logo {
+  font-family: 'Unbounded', sans-serif;
+  font-weight: 700; font-size: 1.15rem;
+  letter-spacing: -0.5px;
+  background: linear-gradient(90deg, #fff, #00b4ff);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.nav-links { display:flex; gap:36px; align-items:center; }
+.nav-links a {
+  color: rgba(255,255,255,0.5); text-decoration:none;
+  font-size: 0.85rem; font-weight:500; letter-spacing:0.3px;
+  transition: color 0.2s;
+}
+.nav-links a:hover { color: white; }
+.nav-btn {
+  background: linear-gradient(135deg, #0052ff, #00b4ff);
+  color: white; padding: 10px 24px; border-radius: 100px;
+  font-size: 0.85rem; font-weight: 600; text-decoration:none;
+  transition: all 0.3s; letter-spacing: 0.3px;
+  box-shadow: 0 0 30px rgba(0,82,255,0.3);
+}
+.nav-btn:hover { transform:translateY(-2px); box-shadow: 0 0 50px rgba(0,82,255,0.5); }
+
+/* ─── HERO ─── */
+.hero {
+  position: relative; z-index:1;
+  min-height: 100vh;
+  display: flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  text-align:center;
+  padding: 140px 40px 80px;
+  overflow: hidden;
+}
+
+/* glowing ring */
+.hero-ring {
+  position: absolute;
+  width: 900px; height: 900px;
+  border-radius: 50%;
+  border: 1px solid rgba(0,180,255,0.08);
+  top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  animation: spin 40s linear infinite;
+}
+.hero-ring::before {
+  content:'';
+  position:absolute; top:-2px; left:30%;
+  width:80px; height:4px; border-radius:2px;
+  background: linear-gradient(90deg, transparent, #00b4ff, transparent);
+}
+.hero-ring2 {
+  position: absolute;
+  width: 650px; height: 650px;
+  border-radius: 50%;
+  border: 1px solid rgba(0,255,135,0.06);
+  top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  animation: spin 28s linear infinite reverse;
+}
+@keyframes spin { to { transform: translate(-50%,-50%) rotate(360deg); } }
+
+.tag {
+  display: inline-flex; align-items:center; gap:8px;
+  background: rgba(0,255,135,0.08);
+  border: 1px solid rgba(0,255,135,0.2);
+  border-radius: 100px; padding: 7px 18px;
+  font-size: 0.72rem; font-weight:600; color: var(--green);
+  letter-spacing: 1.5px; text-transform: uppercase;
+  margin-bottom: 32px;
+  animation: fadeUp 0.8s ease both;
+}
+.tag-dot { width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green);animation:glow 2s ease infinite; }
+@keyframes glow { 0%,100%{box-shadow:0 0 6px var(--green)} 50%{box-shadow:0 0 20px var(--green)} }
+
+.hero h1 {
+  font-family: 'Unbounded', sans-serif;
+  font-size: clamp(3rem, 7vw, 6.5rem);
+  font-weight: 900; line-height: 1.0;
+  letter-spacing: -3px;
+  margin-bottom: 28px;
+  animation: fadeUp 0.8s 0.1s ease both;
+}
+.hero h1 .line1 { display:block; color: white; }
+.hero h1 .line2 {
+  display:block;
+  background: linear-gradient(90deg, #0052ff, #00b4ff, #00ff87);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-size: 200%;
+  animation: gradshift 4s ease infinite;
+}
+@keyframes gradshift { 0%,100%{background-position:0%} 50%{background-position:100%} }
+
+.hero-sub {
+  font-size: 1.1rem; color: rgba(255,255,255,0.45);
+  max-width: 520px; line-height: 1.75; font-weight:300;
+  margin-bottom: 52px;
+  animation: fadeUp 0.8s 0.2s ease both;
+}
+
+.hero-ctas {
+  display: flex; gap:14px; justify-content:center; flex-wrap:wrap;
+  animation: fadeUp 0.8s 0.3s ease both;
+  margin-bottom: 80px;
+}
+
+.cta-primary {
+  background: linear-gradient(135deg, #0052ff, #00b4ff);
+  color: white; padding: 16px 36px; border-radius: 100px;
+  font-size: 1rem; font-weight:700; text-decoration:none;
+  transition: all 0.3s; display:inline-flex; align-items:center; gap:10px;
+  box-shadow: 0 0 40px rgba(0,82,255,0.4);
+  font-family: 'DM Sans', sans-serif;
+  letter-spacing: 0.2px;
+}
+.cta-primary:hover { transform:translateY(-3px) scale(1.02); box-shadow: 0 0 70px rgba(0,82,255,0.6); }
+
+.cta-ghost {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: white; padding: 16px 36px; border-radius: 100px;
+  font-size: 1rem; font-weight:500; text-decoration:none;
+  transition: all 0.3s; display:inline-flex; align-items:center; gap:10px;
+  font-family: 'DM Sans', sans-serif;
+  backdrop-filter: blur(10px);
+}
+.cta-ghost:hover { background:rgba(255,255,255,0.1); transform:translateY(-3px); }
+
+/* ─── FLOATING CARDS ─── */
+.float-cards {
+  position: relative; z-index:1;
+  display: flex; justify-content:center; gap:16px; flex-wrap:wrap;
+  padding: 0 40px 20px;
+  animation: fadeUp 0.8s 0.4s ease both;
+}
+
+.fcard {
+  background: rgba(10,15,26,0.8);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 20px;
+  padding: 20px 24px;
+  backdrop-filter: blur(20px);
+  transition: transform 0.4s, border-color 0.4s;
+  min-width: 180px;
+}
+.fcard:hover { transform:translateY(-6px); border-color:rgba(0,180,255,0.3); }
+.fcard-icon { font-size:1.6rem; margin-bottom:10px; }
+.fcard-val {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 1.4rem; font-weight:700; margin-bottom:4px;
+}
+.fcard-label { font-size:0.72rem; color:rgba(255,255,255,0.4); font-weight:500; text-transform:uppercase; letter-spacing:0.8px; }
+.green { color: var(--green); }
+.blue { color: var(--blue2); }
+.teal { color: var(--teal); }
+
+/* ─── MARQUEE ─── */
+.marquee-wrap {
+  position:relative; z-index:1;
+  overflow:hidden; padding: 40px 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  background: rgba(0,0,0,0.2);
+  margin-top: 40px;
+}
+.marquee-track {
+  display:flex; gap:60px; align-items:center;
+  animation: marquee 20s linear infinite;
+  width: max-content;
+}
+.marquee-track:hover { animation-play-state: paused; }
+@keyframes marquee { to { transform: translateX(-50%); } }
+.marq-item {
+  display:flex; align-items:center; gap:12px;
+  font-size:0.85rem; font-weight:600; color:rgba(255,255,255,0.3);
+  letter-spacing:0.5px; text-transform:uppercase; white-space:nowrap;
+}
+.marq-dot { width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.15); }
+.marq-item.lit { color:rgba(255,255,255,0.7); }
+.marq-item.lit .marq-dot { background:var(--green); box-shadow:0 0 8px var(--green); }
+
+/* ─── FEATURES ─── */
+.features-wrap {
+  position:relative; z-index:1;
+  padding: 120px 80px;
+  max-width: 1300px; margin:0 auto;
+}
+
+.section-eyebrow {
+  font-size: 0.72rem; font-weight:700; letter-spacing:2px;
+  text-transform:uppercase; color:var(--blue2); margin-bottom:16px;
+}
+.section-title {
+  font-family: 'Unbounded', sans-serif;
+  font-size: clamp(2rem,4vw,3.2rem);
+  font-weight:700; letter-spacing:-1.5px; line-height:1.15;
+  margin-bottom: 70px;
+}
+.section-title span { color:var(--green); }
+
+.features-bento {
+  display:grid;
+  grid-template-columns: 1.4fr 1fr 1fr;
+  grid-template-rows: auto auto;
+  gap: 16px;
+}
+
+.bento {
+  background: rgba(10,15,26,0.9);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 24px; padding: 36px;
+  position:relative; overflow:hidden;
+  transition: all 0.4s;
+}
+.bento::before {
+  content:''; position:absolute; inset:0;
+  background: radial-gradient(ellipse at 0% 0%, rgba(0,82,255,0.05), transparent 60%);
+  opacity:0; transition: opacity 0.4s;
+}
+.bento:hover { border-color:rgba(0,180,255,0.2); transform:translateY(-4px); }
+.bento:hover::before { opacity:1; }
+
+.bento.tall { grid-row: span 2; }
+.bento.green-tint::before { background:radial-gradient(ellipse at 0% 0%,rgba(0,255,135,0.06),transparent 60%); }
+.bento.red-tint::before { background:radial-gradient(ellipse at 0% 0%,rgba(255,82,82,0.06),transparent 60%); }
+
+.bento-glow {
+  position:absolute; top:-40px; right:-40px;
+  width:150px; height:150px; border-radius:50%;
+  filter:blur(40px); opacity:0.12;
+}
+.glow-blue { background:#0052ff; }
+.glow-green { background:#00ff87; }
+.glow-red { background:#ff5252; }
+.glow-teal { background:#00e5cc; }
+
+.bento-icon {
+  width:54px; height:54px; border-radius:16px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:1.6rem; margin-bottom:22px;
+  position:relative; z-index:1;
+}
+.bi-blue { background:rgba(0,82,255,0.15); border:1px solid rgba(0,82,255,0.25); }
+.bi-green { background:rgba(0,255,135,0.1); border:1px solid rgba(0,255,135,0.2); }
+.bi-red { background:rgba(255,82,82,0.1); border:1px solid rgba(255,82,82,0.2); }
+.bi-teal { background:rgba(0,229,204,0.1); border:1px solid rgba(0,229,204,0.2); }
+
+.bento-title {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 1rem; font-weight:700; letter-spacing:-0.3px;
+  margin-bottom:12px; position:relative; z-index:1;
+}
+.bento-desc {
+  font-size:0.88rem; color:rgba(255,255,255,0.45);
+  line-height:1.75; font-weight:300; position:relative; z-index:1;
+}
+.bento-badge {
+  display:inline-block; margin-top:18px;
+  font-size:0.68rem; font-weight:700; padding:5px 14px;
+  border-radius:100px; letter-spacing:0.5px;
+  position:relative; z-index:1;
+}
+.bb-blue { background:rgba(0,82,255,0.15); color:#60a5fa; border:1px solid rgba(0,82,255,0.2); }
+.bb-green { background:rgba(0,255,135,0.1); color:var(--green); border:1px solid rgba(0,255,135,0.15); }
+.bb-red { background:rgba(255,82,82,0.1); color:#f87171; border:1px solid rgba(255,82,82,0.15); }
+.bb-teal { background:rgba(0,229,204,0.1); color:var(--teal); border:1px solid rgba(0,229,204,0.15); }
+
+/* big feature visual */
+.bento-visual {
+  margin-top:28px; border-radius:14px; overflow:hidden;
+  border:1px solid rgba(255,255,255,0.06);
+  position:relative; z-index:1;
+}
+.map-visual {
+  height: 200px;
+  background: linear-gradient(160deg, #050e20, #0a1a3a);
+  position:relative; overflow:hidden;
+  display:flex; align-items:center; justify-content:center;
+}
+.mv-grid {
+  position:absolute; inset:0;
+  background-image:
+    linear-gradient(rgba(0,180,255,0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,180,255,0.06) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+.mv-pin {
+  position:absolute; display:flex; flex-direction:column; align-items:center;
+}
+.mv-circle { width:12px;height:12px;border-radius:50%;border:2px solid white; }
+.mv-line { width:2px;height:10px; }
+.mv-g .mv-circle { background:#00ff87;box-shadow:0 0 12px #00ff87; }
+.mv-g .mv-line { background:rgba(0,255,135,0.4); }
+.mv-y .mv-circle { background:#f59e0b;box-shadow:0 0 12px #f59e0b; }
+.mv-y .mv-line { background:rgba(245,158,11,0.4); }
+.mv-r .mv-circle { background:#ef4444;box-shadow:0 0 12px #ef4444; }
+.mv-r .mv-line { background:rgba(239,68,68,0.4); }
+.mv-label {
+  background:rgba(10,15,26,0.9); border:1px solid rgba(255,255,255,0.1);
+  border-radius:10px; padding:8px 14px;
+  font-size:0.7rem; font-weight:600; color:var(--blue2);
+  position:relative; z-index:1;
+  backdrop-filter:blur(10px);
+}
+
+/* noise visual */
+.noise-visual {
+  margin-top:20px; background:rgba(0,0,0,0.3);
+  border:1px solid rgba(255,255,255,0.06);
+  border-radius:14px; padding:16px 14px;
+  display:flex; align-items:flex-end; gap:3px;
+  height:70px; position:relative; z-index:1;
+}
+.nv-bar {
+  flex:1; border-radius:3px 3px 0 0;
+  background:linear-gradient(to top, #0052ff, #00b4ff);
+  opacity:0.7; transition: height 0.3s;
+}
+
+/* report preview */
+.report-preview {
+  margin-top:20px; border-radius:14px; overflow:hidden;
+  border:1px solid rgba(255,82,82,0.15);
+  background:rgba(255,82,82,0.04);
+  padding:16px; position:relative; z-index:1;
+}
+.rp-row { display:flex; align-items:center; gap:10px; }
+.rp-img {
+  width:44px;height:44px;border-radius:10px;
+  background:linear-gradient(135deg,#1a2a1a,#0d1f0d);
+  border:1px solid rgba(0,255,135,0.1);
+  display:flex;align-items:center;justify-content:center;font-size:1.2rem;
+}
+.rp-info {}
+.rp-title { font-size:0.75rem;font-weight:700;margin-bottom:3px; }
+.rp-sub { font-size:0.65rem;color:rgba(255,255,255,0.3); }
+.rp-badge { margin-left:auto;background:rgba(255,82,82,0.15);border:1px solid rgba(255,82,82,0.2);color:#f87171;font-size:0.6rem;font-weight:700;padding:3px 10px;border-radius:100px; }
+
+/* ─── STEPS ─── */
+.steps-wrap {
+  position:relative; z-index:1;
+  padding: 0 80px 120px;
+  max-width:1300px; margin:0 auto;
+}
+.steps-grid {
+  display:grid; grid-template-columns: repeat(4,1fr); gap:2px;
+  background: rgba(255,255,255,0.04);
+  border-radius:24px; overflow:hidden;
+  border:1px solid var(--border);
+}
+.step-item {
+  background: var(--bg); padding: 40px 32px;
+  position:relative; transition: background 0.3s;
+}
+.step-item:hover { background: rgba(10,15,26,0.8); }
+.step-num {
+  font-family:'Unbounded',sans-serif;
+  font-size:3rem; font-weight:900; line-height:1;
+  margin-bottom:20px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.03));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+}
+.step-title { font-weight:700; font-size:0.95rem; margin-bottom:10px; letter-spacing:-0.2px; }
+.step-desc { font-size:0.82rem; color:rgba(255,255,255,0.35); line-height:1.65; }
+.step-icon { font-size:1.8rem; margin-bottom:14px; }
+
+/* ─── CTA SECTION ─── */
+.cta-section {
+  position:relative; z-index:1;
+  padding: 0 80px 100px;
+}
+.cta-inner {
+  max-width:1140px; margin:0 auto;
+  position:relative; border-radius:32px; overflow:hidden;
+  padding: 90px 80px;
+  background: linear-gradient(135deg, #020d2e, #040f20);
+  border:1px solid rgba(0,82,255,0.2);
+}
+.cta-bg {
+  position:absolute; inset:0;
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(0,82,255,0.18), transparent 50%),
+    radial-gradient(ellipse at 80% 50%, rgba(0,255,135,0.1), transparent 50%);
+}
+.cta-grid-lines {
+  position:absolute; inset:0;
+  background-image:
+    linear-gradient(rgba(0,82,255,0.06) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,82,255,0.06) 1px,transparent 1px);
+  background-size:40px 40px;
+}
+.cta-content { position:relative; z-index:1; text-align:center; }
+.cta-content h2 {
+  font-family:'Unbounded',sans-serif;
+  font-size:clamp(2rem,5vw,4rem);
+  font-weight:900; letter-spacing:-2px; line-height:1.05;
+  margin-bottom:20px;
+}
+.cta-content h2 span {
+  background:linear-gradient(90deg,#0052ff,#00b4ff,#00ff87);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+}
+.cta-content p { font-size:1rem; color:rgba(255,255,255,0.4); margin-bottom:44px; line-height:1.7; font-weight:300; }
+.cta-btns { display:flex; gap:14px; justify-content:center; flex-wrap:wrap; }
+
+.dl-main {
+  background:linear-gradient(135deg,#0052ff,#00b4ff);
+  color:white; padding:18px 42px; border-radius:100px;
+  font-size:1rem; font-weight:700; text-decoration:none;
+  transition:all 0.3s; display:inline-flex; align-items:center; gap:10px;
+  box-shadow:0 0 50px rgba(0,82,255,0.4);
+  font-family:'DM Sans',sans-serif;
+}
+.dl-main:hover { transform:translateY(-3px) scale(1.03); box-shadow:0 0 80px rgba(0,82,255,0.6); }
+
+.dl-sec {
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.1);
+  color:white; padding:18px 42px; border-radius:100px;
+  font-size:1rem; font-weight:500; text-decoration:none;
+  transition:all 0.3s; display:inline-flex; align-items:center; gap:10px;
+  font-family:'DM Sans',sans-serif; backdrop-filter:blur(10px);
+}
+.dl-sec:hover { background:rgba(255,255,255,0.12); transform:translateY(-3px); }
+
+/* ─── FOOTER ─── */
+footer {
+  position:relative;z-index:1;
+  border-top:1px solid var(--border);
+  padding:32px 80px;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.footer-logo { font-family:'Unbounded',sans-serif; font-size:0.9rem; font-weight:700; color:rgba(255,255,255,0.3); }
+.footer-links { display:flex; gap:28px; }
+.footer-links a { color:rgba(255,255,255,0.3); text-decoration:none; font-size:0.82rem; transition:color 0.2s; }
+.footer-links a:hover { color:rgba(255,255,255,0.7); }
+
+@keyframes fadeUp {
+  from{opacity:0;transform:translateY(30px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+@media(max-width:900px){
+  nav{padding:16px 24px;}
+  .nav-links{display:none;}
+  .hero{padding:120px 24px 60px;}
+  .float-cards{padding:0 16px;}
+  .features-wrap,.steps-wrap,.cta-section{padding-left:24px;padding-right:24px;}
+  .features-bento{grid-template-columns:1fr;}
+  .bento.tall{grid-row:span 1;}
+  .steps-grid{grid-template-columns:1fr 1fr;}
+  .cta-inner{padding:48px 28px;}
+  footer{flex-direction:column;gap:20px;text-align:center;padding:28px 24px;}
+}
+</style>
+</head>
+<body>
+
+<div class="blob blob1"></div>
+<div class="blob blob2"></div>
+<div class="blob blob3"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">EnviroSense</div>
+  <div class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#how">How it works</a>
+    <a href="https://github.com/pratikragade/EnviroSense" target="_blank">GitHub</a>
+    <a href="#download" class="nav-btn">⬇ Download Free</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-ring"></div>
+  <div class="hero-ring2"></div>
+
+  <div class="tag">
+    <span class="tag-dot"></span>
+    Android App · 100% Free
+  </div>
+
+  <h1>
+    <span class="line1">Your Environment.</span>
+    <span class="line2">Visualized.</span>
+  </h1>
+
+  <p class="hero-sub">
+    Real-time noise monitoring. Live air pollution maps. Report issues with photo evidence. EnviroSense gives you the power to sense and protect your world.
+  </p>
+
+  <div class="hero-ctas">
+    <a href="https://github.com/pratikragade/EnviroSense/releases" class="cta-primary" target="_blank">
+      ⬇ Download APK Free
+    </a>
+    <a href="https://github.com/pratikragade/EnviroSense" class="cta-ghost" target="_blank">
+      ☆ View on GitHub
+    </a>
+  </div>
+</section>
+
+<!-- FLOATING METRIC CARDS -->
+<div class="float-cards">
+  <div class="fcard">
+    <div class="fcard-icon">🔊</div>
+    <div class="fcard-val blue">68 dB</div>
+    <div class="fcard-label">Noise Level</div>
+  </div>
+  <div class="fcard">
+    <div class="fcard-icon">💨</div>
+    <div class="fcard-val green">AQI 42</div>
+    <div class="fcard-label">Air Quality</div>
+  </div>
+  <div class="fcard">
+    <div class="fcard-icon">📍</div>
+    <div class="fcard-val teal">Live</div>
+    <div class="fcard-label">GPS Tracking</div>
+  </div>
+  <div class="fcard">
+    <div class="fcard-icon">📋</div>
+    <div class="fcard-val" style="color:#f87171">Report</div>
+    <div class="fcard-label">Issue Reporting</div>
+  </div>
+</div>
+
+<!-- MARQUEE -->
+<div class="marquee-wrap">
+  <div class="marquee-track">
+    <span class="marq-item lit"><span class="marq-dot"></span>Real-Time Noise Monitor</span>
+    <span class="marq-item"><span class="marq-dot"></span>Air Pollution Heatmap</span>
+    <span class="marq-item lit"><span class="marq-dot"></span>Live AQI Data</span>
+    <span class="marq-item"><span class="marq-dot"></span>GPS Photo Tagging</span>
+    <span class="marq-item lit"><span class="marq-dot"></span>Pollution Reporting</span>
+    <span class="marq-item"><span class="marq-dot"></span>Open Source</span>
+    <span class="marq-item lit"><span class="marq-dot"></span>Free Forever</span>
+    <span class="marq-item"><span class="marq-dot"></span>Android App</span>
+    <!-- duplicate for seamless loop -->
+    <span class="marq-item lit"><span class="marq-dot"></span>Real-Time Noise Monitor</span>
+    <span class="marq-item"><span class="marq-dot"></span>Air Pollution Heatmap</span>
+    <span class="marq-item lit"><span class="marq-dot"></span>Live AQI Data</span>
+    <span class="marq-item"><span class="marq-dot"></span>GPS Photo Tagging</span>
+    <span class="marq-item lit"><span class="marq-dot"></span>Pollution Reporting</span>
+    <span class="marq-item"><span class="marq-dot"></span>Open Source</span>
+    <span class="marq-item lit"><span class="marq-dot"></span>Free Forever</span>
+    <span class="marq-item"><span class="marq-dot"></span>Android App</span>
+  </div>
+</div>
+
+<!-- FEATURES BENTO -->
+<section class="features-wrap" id="features">
+  <div class="section-eyebrow">Features</div>
+  <div class="section-title">Built to make you<br><span>sense everything</span></div>
+
+  <div class="features-bento">
+
+    <!-- Big card: Map -->
+    <div class="bento tall">
+      <div class="bento-glow glow-blue"></div>
+      <div class="bento-icon bi-blue">🗺️</div>
+      <div class="bento-title">Live Air Pollution Map</div>
+      <div class="bento-desc">See air quality and pollution hotspots overlaid on a real-time interactive map. Color-coded markers instantly show safe, moderate, and danger zones across your city.</div>
+      <span class="bento-badge bb-blue">AQI · Live Map · Heatmap</span>
+      <div class="bento-visual">
+        <div class="map-visual">
+          <div class="mv-grid"></div>
+          <div class="mv-pin mv-g" style="top:28%;left:20%">
+            <div class="mv-circle"></div><div class="mv-line"></div>
+          </div>
+          <div class="mv-pin mv-y" style="top:50%;left:50%">
+            <div class="mv-circle"></div><div class="mv-line"></div>
+          </div>
+          <div class="mv-pin mv-r" style="top:20%;left:72%">
+            <div class="mv-circle"></div><div class="mv-line"></div>
+          </div>
+          <div class="mv-pin mv-g" style="top:65%;left:78%">
+            <div class="mv-circle"></div><div class="mv-line"></div>
+          </div>
+          <div class="mv-label">📍 Air Quality · Live</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Noise -->
+    <div class="bento">
+      <div class="bento-glow glow-teal"></div>
+      <div class="bento-icon bi-teal">🔊</div>
+      <div class="bento-title">Noise Monitor — Anywhere</div>
+      <div class="bento-desc">Measure decibel levels in real-time from any location. Instantly know if your environment is safe or harmful.</div>
+      <span class="bento-badge bb-teal">Real-Time · Live dB</span>
+      <div class="noise-visual">
+        <div class="nv-bar" style="height:35%"></div>
+        <div class="nv-bar" style="height:60%"></div>
+        <div class="nv-bar" style="height:45%"></div>
+        <div class="nv-bar" style="height:85%"></div>
+        <div class="nv-bar" style="height:55%"></div>
+        <div class="nv-bar" style="height:70%"></div>
+        <div class="nv-bar" style="height:40%"></div>
+        <div class="nv-bar" style="height:90%"></div>
+        <div class="nv-bar" style="height:60%"></div>
+        <div class="nv-bar" style="height:50%"></div>
+        <div class="nv-bar" style="height:75%"></div>
+        <div class="nv-bar" style="height:65%"></div>
+      </div>
+    </div>
+
+    <!-- Camera -->
+    <div class="bento">
+      <div class="bento-glow glow-green"></div>
+      <div class="bento-icon bi-green">📷</div>
+      <div class="bento-title">Camera + GPS Tagging</div>
+      <div class="bento-desc">Spot pollution? Capture photo evidence instantly. Every shot is automatically tagged with your GPS coordinates.</div>
+      <span class="bento-badge bb-green">Auto GPS · Evidence</span>
+    </div>
+
+    <!-- Report -->
+    <div class="bento green-tint" style="border-color:rgba(255,82,82,0.12)">
+      <div class="bento-glow glow-red"></div>
+      <div class="bento-icon bi-red">⚠️</div>
+      <div class="bento-title">Report Pollution Issues</div>
+      <div class="bento-desc">Submit reports for garbage dumping, toxic waste or any violation — with photos, location, and description attached.</div>
+      <span class="bento-badge bb-red">Community Action</span>
+      <div class="report-preview">
+        <div class="rp-row">
+          <div class="rp-img">🗑️</div>
+          <div class="rp-info">
+            <div class="rp-title">Illegal Garbage Dump</div>
+            <div class="rp-sub">📍 GPS Tagged · Photo Attached</div>
+          </div>
+          <div class="rp-badge">Submitted ✓</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="steps-wrap" id="how">
+  <div class="section-eyebrow">How it works</div>
+  <div class="section-title">Four steps to a<br><span>cleaner world</span></div>
+
+  <div class="steps-grid">
+    <div class="step-item">
+      <div class="step-icon">📲</div>
+      <div class="step-num">01</div>
+      <div class="step-title">Download APK</div>
+      <div class="step-desc">Grab the free APK from GitHub and install on your Android device in seconds. No sign-up needed.</div>
+    </div>
+    <div class="step-item">
+      <div class="step-icon">🗺️</div>
+      <div class="step-num">02</div>
+      <div class="step-title">Monitor Live</div>
+      <div class="step-desc">Check real-time noise levels and open the pollution map to see AQI data in your area right now.</div>
+    </div>
+    <div class="step-item">
+      <div class="step-icon">📷</div>
+      <div class="step-num">03</div>
+      <div class="step-title">Capture Evidence</div>
+      <div class="step-desc">See a problem? Use the in-app camera to snap a GPS-tagged photo of pollution instantly.</div>
+    </div>
+    <div class="step-item">
+      <div class="step-icon">🌍</div>
+      <div class="step-num">04</div>
+      <div class="step-title">Report & Protect</div>
+      <div class="step-desc">Submit your report with photo and location. Help your community stay cleaner and healthier.</div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section" id="download">
+  <div class="cta-inner">
+    <div class="cta-bg"></div>
+    <div class="cta-grid-lines"></div>
+    <div class="cta-content">
+      <h2>Start protecting<br><span>your environment</span><br>today.</h2>
+      <p>Free. Open source. No ads. No subscriptions.<br>Just powerful environmental monitoring for everyone.</p>
+      <div class="cta-btns">
+        <a href="https://github.com/pratikragade/EnviroSense/releases" class="dl-main" target="_blank">
+          ⬇ Download APK for Android
+        </a>
+        <a href="https://github.com/pratikragade/EnviroSense" class="dl-sec" target="_blank">
+          ☆ Star on GitHub
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">EnviroSense</div>
+  <div class="footer-links">
+    <a href="https://github.com/pratikragade/EnviroSense" target="_blank">GitHub</a>
+    <a href="https://github.com/pratikragade/EnviroSense/releases" target="_blank">Download</a>
+    <a href="https://github.com/pratikragade" target="_blank">By Pratik Ragade</a>
+  </div>
+</footer>
+
+</body>
+</html>
